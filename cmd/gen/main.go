@@ -54,6 +54,11 @@ func createSingle(cmd, name string) {
 
 	createFile(folder, fileName, tmpl, name, nameLower)
 	appendProvider("internal/provider/providers.go", cmd, providerSet)
+
+	if cmd == "make:handler" {
+		containerFile := "internal/route/handlers-container.go"
+		appendHandlerToContainer(containerFile, name)
+	}
 }
 
 // Module: generate handler+service+repository dengan DI lengkap
@@ -88,6 +93,11 @@ func createModuleFile(kind, name string) {
 
 	createFile(folder, fileName, tmpl, name, nameLower)
 	appendProvider("internal/provider/providers.go", "make:"+kind, providerSet)
+
+	if kind == "handler" {
+		containerFile := "internal/route/handlers-container.go"
+		appendHandlerToContainer(containerFile, name)
+	}
 }
 
 // Utility: create file from template
@@ -157,6 +167,66 @@ func appendProvider(filePath, cmd, line string) {
 	} else {
 		fmt.Println("Provider already exists in providers.go")
 	}
+}
+
+// Append handler to handlers-container.go
+func appendHandlerToContainer(filePath, handlerName string) {
+	content, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		log.Fatalf("Failed to read %s: %v", filePath, err)
+	}
+
+	strContent := string(content)
+	nameLower := strings.ToLower(handlerName)
+	fieldLine := fmt.Sprintf("\t%sHandler *handler.%sHandler", handlerName, handlerName)
+	paramLine := fmt.Sprintf("\t%sHandler *handler.%sHandler,", nameLower, handlerName)
+	assignLine := fmt.Sprintf("\t\t%sHandler: %sHandler,", handlerName, nameLower)
+
+	// Tambahkan field struct
+	if !strings.Contains(strContent, fieldLine) {
+		idxStruct := strings.Index(strContent, "type HandlersContainer struct {")
+		if idxStruct == -1 {
+			log.Fatalf("Cannot find HandlersContainer struct in %s", filePath)
+		}
+		before := strContent[:idxStruct+len("type HandlersContainer struct {")]
+		after := strContent[idxStruct+len("type HandlersContainer struct {"):]
+		strContent = before + "\n" + fieldLine + after
+	}
+
+	// Tambahkan parameter constructor
+	if !strings.Contains(strContent, paramLine) {
+		idxCtor := strings.Index(strContent, "func NewHandlersContainer(")
+		if idxCtor == -1 {
+			log.Fatalf("Cannot find NewHandlersContainer func in %s", filePath)
+		}
+		idxOpen := strings.Index(strContent[idxCtor:], "(") + idxCtor
+		idxClose := strings.Index(strContent[idxOpen:], ")") + idxOpen + 1
+		before := strContent[:idxOpen+1]
+		mid := strContent[idxOpen+1 : idxClose-1]
+		after := strContent[idxClose-1:]
+		if len(mid) > 0 {
+			mid += "\n"
+		}
+		strContent = before + mid + paramLine + after
+	}
+
+	// Tambahkan assign di body constructor
+	if !strings.Contains(strContent, assignLine) {
+		idxBody := strings.Index(strContent, "return &HandlersContainer{")
+		if idxBody == -1 {
+			log.Fatalf("Cannot find return &HandlersContainer in %s", filePath)
+		}
+		idxBrace := idxBody + len("return &HandlersContainer{")
+		before := strContent[:idxBrace]
+		after := strContent[idxBrace:]
+		strContent = before + "\n" + assignLine + after
+	}
+
+	err = ioutil.WriteFile(filePath, []byte(strContent), 0644)
+	if err != nil {
+		log.Fatalf("Failed to write to %s: %v", filePath, err)
+	}
+	fmt.Println("Updated handlers-container.go with", handlerName, "handler")
 }
 
 // Templates
