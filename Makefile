@@ -38,3 +38,16 @@ migrate-down:
 # Generate wire_gen.go
 wire:
 	wire $(WIRE_PATH)
+
+# ========== FILE GENERATOR ==========
+handler:
+	go run cmd/gen/main.go make:handler $(name)
+
+service:
+	go run cmd/gen/main.go make:service $(name)
+
+repository:
+	go run cmd/gen/main.go make:repository $(name)
+
+module:
+	go run cmd/gen/main.go make:module $(name)
