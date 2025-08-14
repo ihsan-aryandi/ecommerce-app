@@ -1,0 +1,8 @@
+# IDEA
+.idea
+
+# Env Files
+.env
+
+# Wire Gen
+internal/app/wire_gen.go
