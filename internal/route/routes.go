@@ -5,7 +5,10 @@ import "github.com/gin-gonic/gin"
 func SetupRoutes(handlers *HandlersContainer) *gin.Engine {
 	r := gin.Default()
 
-	// Checkout API
-	r.GET("/checkout", handlers.CheckoutHandler.GetTotal)
+	// Cart API
+	r.POST("/cart", handlers.CartHandler.CreateCart)
+
+	// Order API
+	r.POST("/order", handlers.OrderHandler.CreateOrder)
 	return r
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/doug-martin/goqu/v9"
 	"github.com/joho/godotenv"
 )
 
@@ -16,6 +17,9 @@ func Run() error {
 
 	// Configuration
 	cfg := config.Load()
+
+	// Set Goqu default dialect
+	goqu.RegisterDialect("postgres", nil)
 
 	// Router
 	router := InitializeApp()

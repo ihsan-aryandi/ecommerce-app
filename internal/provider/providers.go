@@ -9,13 +9,16 @@ import (
 )
 
 var HandlersSet = wire.NewSet(
+	handler.NewCartHandler,
 	handler.NewOrderHandler,
 )
 
 var ServicesSet = wire.NewSet(
+	service.NewCartService,
 	service.NewOrderService,
 )
 
 var RepositoriesSet = wire.NewSet(
+	repository.NewCartRepository,
 	repository.NewOrderRepository,
 )

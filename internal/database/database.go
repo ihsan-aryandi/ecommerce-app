@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/doug-martin/goqu/v9"
 	_ "github.com/lib/pq"
 )
 
-func CreateConnection(cfg *config.Config) *sql.DB {
+func CreateConnection(cfg *config.Config) *goqu.Database {
 	dbConfig := cfg.Database
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
@@ -25,5 +26,5 @@ func CreateConnection(cfg *config.Config) *sql.DB {
 		log.Fatalf("failed to ping DB connection: %v", err)
 	}
 
-	return db
+	return goqu.New("postgres", db)
 }

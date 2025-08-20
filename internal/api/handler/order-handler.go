@@ -16,7 +16,6 @@ func NewOrderHandler(orderService *service.OrderService) *OrderHandler {
 	}
 }
 
-func (h OrderHandler) GetTotal(ctx *gin.Context) {
-	totals := h.orderService.GetTotal()
-	ctx.JSON(200, totals)
+func (h OrderHandler) CreateOrder(ctx *gin.Context) {
+
 }

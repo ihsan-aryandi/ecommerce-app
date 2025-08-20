@@ -1,16 +1,17 @@
 package service
 
 import (
-	"database/sql"
 	"ecommerce-app/internal/api/repository"
+
+	"github.com/doug-martin/goqu/v9"
 )
 
 type OrderService struct {
-	db              *sql.DB
+	db              *goqu.Database
 	orderRepository *repository.OrderRepository
 }
 
-func NewOrderService(db *sql.DB, orderRepository *repository.OrderRepository) *OrderService {
+func NewOrderService(db *goqu.Database, orderRepository *repository.OrderRepository) *OrderService {
 	return &OrderService{
 		db:              db,
 		orderRepository: orderRepository,
