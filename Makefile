@@ -37,6 +37,7 @@ migrate-down:
 # ========== GOOGLE WIRE ==========
 # Generate wire_gen.go
 wire:
+	@echo Injecting dependencies...
 	wire $(WIRE_PATH)
 
 # ========== FILE GENERATOR ==========
