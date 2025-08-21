@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"text/template"
 )
@@ -31,28 +32,28 @@ func main() {
 
 // Single file generation
 func createSingle(cmd, name string) {
-	nameLower := strings.ToLower(name)
+	nameKebabCase := toKebabCase(name)
 	var folder, fileName, tmpl, providerSet string
 
 	switch cmd {
 	case "make:handler":
 		folder = "internal/api/handler"
-		fileName = fmt.Sprintf("%s-handler.go", nameLower)
+		fileName = fmt.Sprintf("%s-handler.go", nameKebabCase)
 		tmpl = handlerTemplateSingle
 		providerSet = fmt.Sprintf("handler.New%sHandler,", name)
 	case "make:service":
 		folder = "internal/api/service"
-		fileName = fmt.Sprintf("%s-service.go", nameLower)
+		fileName = fmt.Sprintf("%s-service.go", nameKebabCase)
 		tmpl = serviceTemplateSingle
 		providerSet = fmt.Sprintf("service.New%sService,", name)
 	case "make:repository":
 		folder = "internal/api/repository"
-		fileName = fmt.Sprintf("%s-repository.go", nameLower)
+		fileName = fmt.Sprintf("%s-repository.go", nameKebabCase)
 		tmpl = repositoryTemplate
 		providerSet = fmt.Sprintf("repository.New%sRepository,", name)
 	}
 
-	createFile(folder, fileName, tmpl, name, nameLower)
+	createFile(folder, fileName, tmpl, name, nameKebabCase)
 	appendProvider("internal/provider/providers.go", cmd, providerSet)
 
 	if cmd == "make:handler" {
@@ -70,28 +71,28 @@ func createModule(name string) {
 }
 
 func createModuleFile(kind, name string) {
-	nameLower := strings.ToLower(name)
+	nameKebabCase := toKebabCase(name)
 	var folder, fileName, tmpl, providerSet string
 
 	switch kind {
 	case "handler":
 		folder = "internal/api/handler"
-		fileName = fmt.Sprintf("%s-handler.go", nameLower)
+		fileName = fmt.Sprintf("%s-handler.go", nameKebabCase)
 		tmpl = handlerTemplateModule
 		providerSet = fmt.Sprintf("handler.New%sHandler,", name)
 	case "service":
 		folder = "internal/api/service"
-		fileName = fmt.Sprintf("%s-service.go", nameLower)
+		fileName = fmt.Sprintf("%s-service.go", nameKebabCase)
 		tmpl = serviceTemplateModule
 		providerSet = fmt.Sprintf("service.New%sService,", name)
 	case "repository":
 		folder = "internal/api/repository"
-		fileName = fmt.Sprintf("%s-repository.go", nameLower)
+		fileName = fmt.Sprintf("%s-repository.go", nameKebabCase)
 		tmpl = repositoryTemplate
 		providerSet = fmt.Sprintf("repository.New%sRepository,", name)
 	}
 
-	createFile(folder, fileName, tmpl, name, nameLower)
+	createFile(folder, fileName, tmpl, name, nameKebabCase)
 	appendProvider("internal/provider/providers.go", "make:"+kind, providerSet)
 
 	if kind == "handler" {
@@ -101,7 +102,7 @@ func createModuleFile(kind, name string) {
 }
 
 // Utility: create file from template
-func createFile(folder, fileName, tmpl, name, nameLower string) {
+func createFile(folder, fileName, tmpl, name, nameKebabCase string) {
 	if err := os.MkdirAll(folder, os.ModePerm); err != nil {
 		log.Fatal(err)
 	}
@@ -124,7 +125,7 @@ func createFile(folder, fileName, tmpl, name, nameLower string) {
 		NameLower string
 	}{
 		Name:      name,
-		NameLower: nameLower,
+		NameLower: nameKebabCase,
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -229,6 +230,19 @@ func appendHandlerToContainer(filePath, handlerName string) {
 	fmt.Println("Updated handlers-container.go with", handlerName, "handler")
 }
 
+func toKebabCase(s string) string {
+	// 1. Tambahkan spasi di antara huruf kapital yang berurutan dan huruf kecil
+	re1 := regexp.MustCompile(`([A-Z]+)([A-Z][a-z])`)
+	s = re1.ReplaceAllString(s, "${1} ${2}")
+
+	// 2. Tambahkan spasi di antara huruf kecil/angka diikuti huruf kapital
+	re2 := regexp.MustCompile(`([a-z0-9])([A-Z])`)
+	s = re2.ReplaceAllString(s, "${1} ${2}")
+
+	// 3. Ubah spasi menjadi tanda hubung (-) dan ke huruf kecil semua
+	return strings.ToLower(strings.ReplaceAll(s, " ", "-"))
+}
+
 // Templates
 
 // Single file templates (no DI)
@@ -283,13 +297,13 @@ func New{{.Name}}Service({{.NameLower}}Repository *repository.{{.Name}}Repositor
 
 var repositoryTemplate = `package repository
 
-import "database/sql"
+import "github.com/doug-martin/goqu/v9"
 
 type {{.Name}}Repository struct {
-	db *sql.DB
+	db *goqu.Database
 }
 
-func New{{.Name}}Repository(db *sql.DB) *{{.Name}}Repository {
+func New{{.Name}}Repository(db *goqu.Database) *{{.Name}}Repository {
 	return &{{.Name}}Repository{db: db}
 }
 `
