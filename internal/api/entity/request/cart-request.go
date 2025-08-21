@@ -4,7 +4,7 @@ import "ecommerce-app/internal/api/apierr"
 
 type CartRequest struct {
 	ProductVariantId int64 `json:"product_variant_id"`
-	Qty              int   `json:"qty"`
+	Qty              int32 `json:"qty"`
 }
 
 func (c CartRequest) ValidateAddToCart() *apierr.Error {

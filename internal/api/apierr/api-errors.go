@@ -17,7 +17,11 @@ type Error struct {
 }
 
 func (err *Error) Error() string {
-	return err.CausedBy.Error()
+	if err.CausedBy != nil {
+		return err.CausedBy.Error()
+	}
+
+	return ""
 }
 
 func InternalServer(causedBy error) *Error {
@@ -29,14 +33,14 @@ func InternalServer(causedBy error) *Error {
 	}
 }
 
-func DataNotFound(entity string, causedBy error) *Error {
+func DataNotFound(entity string) *Error {
 	return &Error{
-		StatusCode: 500,
+		StatusCode: 400,
 		Code:       DataNotFoundErrorCode,
 		Message: replacePlaceholders(DataNotFoundErrorMessage, Params{
 			"entity": entity,
 		}),
-		CausedBy: causedBy,
+		CausedBy: errors.New("data not found"),
 	}
 }
 
@@ -54,7 +58,7 @@ func Validation(validationError ValidationError) *Error {
 		StatusCode: 400,
 		Code:       ValidationErrorCode,
 		Message:    ValidationErrorMessage,
-		CausedBy:   nil,
+		CausedBy:   errors.New("validation error"),
 		Details:    validationError,
 	}
 }
@@ -82,5 +86,8 @@ func (v ValidationError) Add(key string, message string) {
 }
 
 func (v ValidationError) Error() *Error {
-	return Validation(v)
+	if len(v) > 0 {
+		return Validation(v)
+	}
+	return nil
 }

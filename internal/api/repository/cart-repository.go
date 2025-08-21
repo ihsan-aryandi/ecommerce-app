@@ -19,51 +19,26 @@ func NewCartRepository(db *goqu.Database) *CartRepository {
 }
 
 func (r CartRepository) FindByUserIdTx(tx *goqu.TxDatabase, userId int64) (*model.CartModel, error) {
-	query, args, err := tx.Select(
-		goqu.C("id"),
-		goqu.C("user_id"),
-	).
-		From(goqu.T(r.tableName)).
-		Where(goqu.Ex{
-			"user_id":    userId,
-			"deleted_at": goqu.Op{"isnot": nil},
-		}).
-		Prepared(true).
-		ToSQL()
-
-	if err != nil {
-		return nil, err
-	}
-
 	result := new(model.CartModel)
-	err = tx.
-		QueryRow(query, args).
-		Scan()
-	if err != nil {
-		return nil, err
-	}
 
-	return result, nil
+	found, err := tx.
+		From(goqu.T(r.tableName)).
+		Where(
+			goqu.C("user_id").Eq(userId),
+			goqu.C("deleted_at").IsNull(),
+		).
+		ScanStruct(result)
+
+	return handleNullAndError(result, found, err)
 }
 
 func (r CartRepository) InsertTx(tx *goqu.TxDatabase, cartModel *model.CartModel) (id int64, err error) {
-	record := goqu.Record{
-		"user_id":    cartModel.UserId.Int64,
-		"created_at": cartModel.CreatedAt.Time,
-	}
+	insert := tx.Insert(goqu.T(r.tableName)).
+		Returning("id").
+		Rows(cartModel).
+		Executor()
 
-	query, args, err := tx.Insert(goqu.T(r.tableName)).
-		Rows(record).
-		Prepared(true).
-		ToSQL()
-
-	if err != nil {
-		return 0, err
-	}
-
-	err = tx.
-		QueryRow(query, args).
-		Scan(&id)
+	_, err = insert.ScanVal(&id)
 	if err != nil {
 		return 0, err
 	}

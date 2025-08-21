@@ -23,14 +23,17 @@ func (h *CartHandler) CreateCart(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		ErrorJSON(ctx, apierr.InvalidRequest(err))
+		return
 	}
 
 	if err := body.ValidateAddToCart(); err != nil {
 		ErrorJSON(ctx, err)
+		return
 	}
 
 	if err := h.cartService.CreateCart(body); err != nil {
 		ErrorJSON(ctx, err)
+		return
 	}
 
 	SuccessJSON(ctx, "Item has been added successfully")

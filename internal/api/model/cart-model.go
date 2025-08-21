@@ -1,9 +1,11 @@
 package model
 
-import "database/sql"
+import (
+	"database/sql"
+)
 
 type CartModel struct {
-	ID     sql.NullInt64
-	UserId sql.NullInt64
+	ID     sql.NullInt64 `db:"id"`
+	UserId sql.NullInt64 `db:"user_id"`
 	Audit
 }
