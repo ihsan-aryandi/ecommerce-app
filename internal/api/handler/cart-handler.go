@@ -19,9 +19,9 @@ func NewCartHandler(cartService *service.CartService) *CartHandler {
 }
 
 func (h *CartHandler) CreateCart(ctx *gin.Context) {
-	var body *request.CartRequest
+	body := new(request.CartRequest)
 
-	if err := ctx.ShouldBindJSON(&body); err != nil {
+	if err := ctx.ShouldBindJSON(body); err != nil {
 		ErrorJSON(ctx, apierr.InvalidRequest(err))
 		return
 	}
@@ -36,5 +36,5 @@ func (h *CartHandler) CreateCart(ctx *gin.Context) {
 		return
 	}
 
-	SuccessJSON(ctx, "Item has been added successfully")
+	SuccessJSON(ctx, "Item has been added successfully", nil, nil)
 }

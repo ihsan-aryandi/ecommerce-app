@@ -31,7 +31,7 @@ type RajaOngkirConfig struct {
 }
 
 type RajaOngkirEndpointsConfig struct {
-	CalculateDomesticCost *RequestConfig
+	CalculateShippingCost *RequestConfig
 }
 
 type RequestConfig struct {

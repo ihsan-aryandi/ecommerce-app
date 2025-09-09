@@ -18,5 +18,5 @@ func (c CartRequest) ValidateAddToCart() *apierr.Error {
 		validationError.Add("qty", apierr.EmptyFieldMessage())
 	}
 
-	return validationError.Error()
+	return validationError.GetError()
 }

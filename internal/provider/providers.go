@@ -19,6 +19,7 @@ var ServicesSet = wire.NewSet(
 )
 
 var RepositoriesSet = wire.NewSet(
+	repository.NewRajaOngkirRepository,
 	repository.NewProductVariantRepository,
 	repository.NewCartItemRepository,
 	repository.NewCartRepository,

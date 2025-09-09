@@ -13,14 +13,17 @@ type Response struct {
 	Success bool        `json:"success"`
 	Code    string      `json:"code"`
 	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
 	Details interface{} `json:"details"`
 }
 
-func SuccessJSON(ctx *gin.Context, message string) {
+func SuccessJSON(ctx *gin.Context, message string, data, details interface{}) {
 	ctx.JSON(200, Response{
 		Success: true,
 		Code:    "SUCCESS",
 		Message: message,
+		Data:    data,
+		Details: details,
 	})
 }
 

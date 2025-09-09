@@ -21,9 +21,9 @@ func Load() *Config {
 			APIKey: getEnv("RAJA_ONGKIR_API_KEY", ""),
 			Host:   getEnv("RAJA_ONGKIR_HOST", ""),
 			Endpoints: &RajaOngkirEndpointsConfig{
-				CalculateDomesticCost: &RequestConfig{
-					Method: getEnv("RAJA_ONGKIR_METHOD_CALCULATE_DOMESTIC_COST", ""),
-					Path:   getEnv("RAJA_ONGKIR_PATH_CALCULATE_DOMESTIC_COST", ""),
+				CalculateShippingCost: &RequestConfig{
+					Method: getEnv("RAJA_ONGKIR_METHOD_CALCULATE_SHIPPING_COST", ""),
+					Path:   getEnv("RAJA_ONGKIR_PATH_CALCULATE_SHIPPING_COST", ""),
 				},
 			},
 		},

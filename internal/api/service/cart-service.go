@@ -5,7 +5,6 @@ import (
 	"ecommerce-app/internal/api/entity/request"
 	"ecommerce-app/internal/api/model"
 	"ecommerce-app/internal/api/repository"
-	"fmt"
 	"time"
 
 	"github.com/doug-martin/goqu/v9"
@@ -144,8 +143,6 @@ func (svc CartService) validateProductVariant(tx *goqu.TxDatabase, productVarian
 	if productVariant == nil {
 		return apierr.DataNotFound("Product Variant")
 	}
-
-	fmt.Println(productVariant.Price.Decimal.String())
 
 	return nil
 }

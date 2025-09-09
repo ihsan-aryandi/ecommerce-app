@@ -3,6 +3,7 @@ package apierr
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -44,6 +45,34 @@ func DataNotFound(entity string) *Error {
 	}
 }
 
+func IdNotFound(field string, id int64) *Error {
+	strId := strconv.Itoa(int(id))
+	return &Error{
+		StatusCode: 400,
+		Code:       IdNotFoundErrorCode,
+		Message: replacePlaceholders(IdNotFoundErrorMessage, Params{
+			"field": field,
+			"id":    strId,
+		}),
+		CausedBy: errors.New("id not found"),
+		Details: map[string]interface{}{
+			"field": field,
+			"id":    id,
+		},
+	}
+}
+
+func EmptyField(entity string) *Error {
+	return &Error{
+		StatusCode: 400,
+		Code:       EmptyFieldErrorCode,
+		Message: replacePlaceholders(EmptyFieldErrorMessage, Params{
+			"field": entity,
+		}),
+		CausedBy: errors.New("data not found"),
+	}
+}
+
 func InvalidRequest(causedBy error) *Error {
 	return &Error{
 		StatusCode: 500,
@@ -68,11 +97,12 @@ func IsAPIError(err error) bool {
 	return errors.As(err, &apiError)
 }
 
-func replacePlaceholders(message string, params Params) (result string) {
+func replacePlaceholders(message string, params Params) string {
 	for key, val := range params {
-		result = strings.ReplaceAll(message, fmt.Sprintf("{%s}", key), val)
+		message = strings.ReplaceAll(message, fmt.Sprintf("{%s}", key), val)
 	}
-	return
+
+	return message
 }
 
 type ValidationError map[string][]string
@@ -85,7 +115,7 @@ func (v ValidationError) Add(key string, message string) {
 	v[key] = append(v[key], message)
 }
 
-func (v ValidationError) Error() *Error {
+func (v ValidationError) GetError() *Error {
 	if len(v) > 0 {
 		return Validation(v)
 	}

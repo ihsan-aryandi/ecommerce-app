@@ -9,6 +9,6 @@ func SetupRoutes(handlers *HandlersContainer) *gin.Engine {
 	r.POST("/cart", handlers.CartHandler.CreateCart)
 
 	// Order API
-	r.POST("/order", handlers.OrderHandler.CreateOrder)
+	r.POST("/order/summary", handlers.OrderHandler.CalculateSummaries)
 	return r
 }
