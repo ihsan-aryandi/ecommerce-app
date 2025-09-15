@@ -9,13 +9,16 @@ import (
 
 type CheckoutHandler struct {
 	calculateService *service.CalculateService
+	checkoutService  *service.CheckoutService
 }
 
 func NewCheckoutHandler(
 	calculateService *service.CalculateService,
+	checkoutService *service.CheckoutService,
 ) *CheckoutHandler {
 	return &CheckoutHandler{
 		calculateService: calculateService,
+		checkoutService:  checkoutService,
 	}
 }
 

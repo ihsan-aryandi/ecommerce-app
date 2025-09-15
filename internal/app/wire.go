@@ -8,6 +8,7 @@ import (
 	"ecommerce-app/internal/database"
 	"ecommerce-app/internal/provider"
 	"ecommerce-app/internal/route"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
 )
@@ -19,6 +20,9 @@ func InitializeApp() *gin.Engine {
 
 		// Database
 		database.CreateConnection,
+
+		// Redis DB
+		database.CreateRDBConnection,
 
 		// Handlers
 		provider.HandlersSet,

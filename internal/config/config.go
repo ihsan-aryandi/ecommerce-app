@@ -14,6 +14,14 @@ func Load() *Config {
 			Password: getEnv("DB_PASSWORD", ""),
 			Name:     getEnv("DB_NAME", "postgres"),
 		},
+		Redis: &RedisConfig{
+			Host:               getEnv("REDIS_HOST", "localhost"),
+			Port:               getEnv("REDIS_PORT", "6379"),
+			Password:           getEnv("REDIS_PASSWORD", ""),
+			DB:                 getEnv("REDIS_DB", "0"),
+			PoolSize:           getEnv("REDIS_POOL_SIZE", ""),
+			MinIdleConnections: getEnv("REDIS_MIN_IDLE_CONNECTIONS", ""),
+		},
 		Midtrans: &MidtransConfig{
 			Host: getEnv("MIDTRANS_HOST", ""),
 		},

@@ -10,12 +10,12 @@ import (
 
 var HandlersSet = wire.NewSet(
 	handler.NewCheckoutHandler,
-	handler.NewCalculateHandler,
 	handler.NewCartHandler,
 	handler.NewOrderHandler,
 )
 
 var ServicesSet = wire.NewSet(
+	service.NewCheckoutService,
 	service.NewProductVariantService,
 	service.NewCalculateService,
 	service.NewCartService,
@@ -23,6 +23,7 @@ var ServicesSet = wire.NewSet(
 )
 
 var RepositoriesSet = wire.NewSet(
+	repository.NewCheckoutSessionRepository,
 	repository.NewRajaOngkirRepository,
 	repository.NewProductVariantRepository,
 	repository.NewCartItemRepository,

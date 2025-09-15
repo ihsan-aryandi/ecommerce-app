@@ -3,6 +3,7 @@ package config
 type Config struct {
 	ServerAddr string
 	Database   *DatabaseConfig
+	Redis      *RedisConfig
 	Midtrans   *MidtransConfig
 	RajaOngkir *RajaOngkirConfig
 }
@@ -13,6 +14,15 @@ type DatabaseConfig struct {
 	Username string
 	Password string
 	Name     string
+}
+
+type RedisConfig struct {
+	Host               string
+	Port               string
+	Password           string
+	DB                 string
+	PoolSize           string
+	MinIdleConnections string
 }
 
 type MidtransConfig struct {
