@@ -7,19 +7,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type CalculateHandler struct {
+type CheckoutHandler struct {
 	calculateService *service.CalculateService
 }
 
-func NewCalculateHandler(
+func NewCheckoutHandler(
 	calculateService *service.CalculateService,
-) *CalculateHandler {
-	return &CalculateHandler{
+) *CheckoutHandler {
+	return &CheckoutHandler{
 		calculateService: calculateService,
 	}
 }
 
-func (h CalculateHandler) CalculateSummaries(ctx *gin.Context) {
+func (h CheckoutHandler) Checkout(ctx *gin.Context) {
+
+}
+
+func (h CheckoutHandler) CalculateSummaries(ctx *gin.Context) {
 	summaryRequest := new(request.CalculateSummaryRequest)
 
 	if err := ctx.ShouldBindJSON(summaryRequest); err != nil {

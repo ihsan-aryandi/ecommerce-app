@@ -9,6 +9,7 @@ import (
 )
 
 var HandlersSet = wire.NewSet(
+	handler.NewCheckoutHandler,
 	handler.NewCalculateHandler,
 	handler.NewCartHandler,
 	handler.NewOrderHandler,
