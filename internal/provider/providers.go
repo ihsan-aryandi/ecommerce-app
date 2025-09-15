@@ -15,6 +15,7 @@ var HandlersSet = wire.NewSet(
 )
 
 var ServicesSet = wire.NewSet(
+	service.NewProductVariantService,
 	service.NewCalculateService,
 	service.NewCartService,
 	service.NewOrderService,

@@ -1,5 +1,7 @@
 package request
 
+import "ecommerce-app/internal/api/apierr"
+
 type ProductVariant struct {
 	ProductVariantId int64 `json:"product_variant_id"`
 	Qty              int   `json:"qty"`
@@ -13,4 +15,48 @@ type OrderRequest struct {
 	CourierType           string           `json:"courier_type"`
 	CourierService        string           `json:"courier_service"`
 	PaymentType           string           `json:"payment_type"`
+}
+
+func (r OrderRequest) ValidateCreateOrder() *apierr.Error {
+	validationErrors := apierr.NewValidationError()
+
+	if len(r.Products) == 0 {
+		validationErrors.Add("products", apierr.EmptyFieldMessage())
+	}
+
+	for _, product := range r.Products {
+		if product.ProductVariantId <= 0 {
+			return apierr.EmptyField("product_variant_id")
+		}
+
+		if product.Qty <= 0 {
+			return apierr.EmptyField("qty")
+		}
+	}
+
+	if r.ShipperDestinationId <= 0 {
+		validationErrors.Add("shipper_destination_id", apierr.EmptyFieldMessage())
+	}
+
+	if r.ReceiverDestinationId <= 0 {
+		validationErrors.Add("receiver_destination_id", apierr.EmptyFieldMessage())
+	}
+
+	if r.Courier == "" {
+		validationErrors.Add("courier", apierr.EmptyFieldMessage())
+	}
+
+	if r.CourierType == "" {
+		validationErrors.Add("courier_type", apierr.EmptyFieldMessage())
+	}
+
+	if r.CourierService == "" {
+		validationErrors.Add("courier_service", apierr.EmptyFieldMessage())
+	}
+
+	if r.PaymentType == "" {
+		validationErrors.Add("payment_type", apierr.EmptyFieldMessage())
+	}
+
+	return validationErrors.GetError()
 }

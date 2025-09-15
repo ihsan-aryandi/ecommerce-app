@@ -16,20 +16,23 @@ import (
 type CalculateService struct {
 	productVariantRepository *repository.ProductVariantRepository
 	rajaOngkirRepository     *repository.RajaOngkirRepository
+	productVariantService    *ProductVariantService
 }
 
 func NewCalculateService(
 	productVariantRepository *repository.ProductVariantRepository,
 	rajaOngkirRepository *repository.RajaOngkirRepository,
+	productVariantService *ProductVariantService,
 ) *CalculateService {
 	return &CalculateService{
 		productVariantRepository: productVariantRepository,
 		rajaOngkirRepository:     rajaOngkirRepository,
+		productVariantService:    productVariantService,
 	}
 }
 
 func (svc CalculateService) CalculateSummaries(body *request.CalculateSummaryRequest) (*response.CalculateSummary, error) {
-	productVariantMap, err := svc.getProductVariantMap(body)
+	productVariantMap, err := svc.productVariantService.GetProductVariantMap(body.Products)
 	if err != nil {
 		return nil, err
 	}
@@ -194,30 +197,6 @@ func (svc CalculateService) findShipmentByCourier(shipments []model.RajaOngkirSh
 	}
 
 	return nil
-}
-
-func (svc CalculateService) getProductVariantMap(body *request.CalculateSummaryRequest) (model.ProductVariantMap, error) {
-	ids := svc.getProductVariantIds(body)
-
-	variants, err := svc.productVariantRepository.FindByIds(ids)
-	if err != nil {
-		return nil, apierr.InternalServer(err)
-	}
-
-	result := make(model.ProductVariantMap)
-	for _, variant := range variants {
-		result[variant.ID.Int64] = &variant
-	}
-
-	return result, nil
-}
-
-func (svc CalculateService) getProductVariantIds(body *request.CalculateSummaryRequest) (result []int64) {
-	for _, product := range body.Products {
-		result = append(result, product.ProductVariantId)
-	}
-
-	return
 }
 
 func (svc CalculateService) validateProductVariantList(products []model.ProductVariant, productVariantRequests []request.ProductVariant) *apierr.Error {
