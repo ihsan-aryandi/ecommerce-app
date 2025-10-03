@@ -22,6 +22,7 @@ type ProductSummary struct {
 }
 
 type CalculateSummary struct {
+	IsInitial             bool
 	Variants              ProductVariantMap
 	ShipperDestinationId  int64
 	ReceiverDestinationId int64

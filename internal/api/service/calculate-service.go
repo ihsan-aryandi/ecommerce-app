@@ -14,31 +14,39 @@ import (
 )
 
 type CalculateService struct {
-	productVariantRepository *repository.ProductVariantRepository
-	rajaOngkirRepository     *repository.RajaOngkirRepository
-	productVariantService    *ProductVariantService
+	productVariantRepository  *repository.ProductVariantRepository
+	rajaOngkirRepository      *repository.RajaOngkirRepository
+	checkoutSessionRepository *repository.CheckoutSessionRepository
+	productVariantService     *ProductVariantService
 }
 
 func NewCalculateService(
 	productVariantRepository *repository.ProductVariantRepository,
 	rajaOngkirRepository *repository.RajaOngkirRepository,
+	checkoutSessionRepository *repository.CheckoutSessionRepository,
 	productVariantService *ProductVariantService,
 ) *CalculateService {
 	return &CalculateService{
-		productVariantRepository: productVariantRepository,
-		rajaOngkirRepository:     rajaOngkirRepository,
-		productVariantService:    productVariantService,
+		productVariantRepository:  productVariantRepository,
+		rajaOngkirRepository:      rajaOngkirRepository,
+		checkoutSessionRepository: checkoutSessionRepository,
+		productVariantService:     productVariantService,
 	}
 }
 
 func (svc CalculateService) CalculateSummaries(body *request.CalculateSummaryRequest) (*response.CalculateSummary, error) {
-	productVariantMap, err := svc.productVariantService.GetProductVariantMap(body.Products)
+	checkoutSession, err := svc.checkoutSessionRepository.GetByUserId(1)
 	if err != nil {
 		return nil, err
 	}
 
+	if checkoutSession == nil {
+		return nil, apierr.DataNotFound("Checkout session")
+	}
+
 	calcSummaryModel := &model.CalculateSummary{
-		Variants:              productVariantMap,
+		IsInitial:             body.IsInitial,
+		Variants:              checkoutSession.ProductVariants,
 		ShipperDestinationId:  body.ShipperDestinationId,
 		ReceiverDestinationId: body.ReceiverDestinationId,
 		Courier:               body.Courier,
@@ -46,7 +54,7 @@ func (svc CalculateService) CalculateSummaries(body *request.CalculateSummaryReq
 		CourierService:        body.CourierService,
 	}
 
-	summaryModel, err := svc.CalculateSummary(body.IsInitial, calcSummaryModel, body.Products)
+	summaryModel, err := svc.CalculateSummary(calcSummaryModel)
 	if err != nil {
 		return nil, err
 	}
@@ -54,12 +62,9 @@ func (svc CalculateService) CalculateSummaries(body *request.CalculateSummaryReq
 	return svc.toCalculateSummaryResponse(summaryModel), nil
 }
 
-func (svc CalculateService) CalculateSummary(isInitial bool, calcModel *model.CalculateSummary, productRequests []request.ProductVariant) (*model.SummaryModel, error) {
+func (svc CalculateService) CalculateSummary(calcModel *model.CalculateSummary) (*model.SummaryModel, error) {
 	// Calculate product summaries
-	calculatedProducts, subTotal, weight, err := svc.calculateProductSummaries(calcModel, productRequests)
-	if err != nil {
-		return nil, err
-	}
+	calculatedProducts, subTotal, weight := svc.calculateProductSummaries(calcModel)
 
 	// Fetch Raja Ongkir API to calculate shipping cost
 	shipping, err := svc.rajaOngkirRepository.CalculateShippingCost(&model.RajaOngkirCalculateShippingCost{
@@ -72,7 +77,7 @@ func (svc CalculateService) CalculateSummary(isInitial bool, calcModel *model.Ca
 		return nil, apierr.InternalServer(err)
 	}
 
-	shipment, shipmentType, err := svc.findEligibleShipment(shipping.Data, calcModel, isInitial)
+	shipment, shipmentType, err := svc.findEligibleShipment(shipping.Data, calcModel, calcModel.IsInitial)
 	if err != nil {
 		return nil, err
 	}
@@ -92,33 +97,26 @@ func (svc CalculateService) CalculateSummary(isInitial bool, calcModel *model.Ca
 	return result, nil
 }
 
-func (svc CalculateService) calculateProductSummaries(calcModel *model.CalculateSummary, productRequests []request.ProductVariant) (
+func (svc CalculateService) calculateProductSummaries(calcModel *model.CalculateSummary) (
 	calculatedProducts []model.ProductSummary,
 	subTotal decimal.Decimal,
 	weight int,
-	err error,
 ) {
 	subTotal = decimal.Zero
 
-	for _, productRequest := range productRequests {
+	for _, variant := range calcModel.Variants {
 		var (
 			total = decimal.Zero
 		)
 
-		// Find product by product variant id
-		variantModel, exists := calcModel.Variants[productRequest.ProductVariantId]
-		if !exists {
-			return nil, decimal.Zero, 0, apierr.IdNotFound("Product Variant ID", productRequest.ProductVariantId)
-		}
-
 		// Calculate total and weight
-		qty := decimal.NewFromInt(int64(productRequest.Qty))
-		total = total.Add(variantModel.Price.Decimal.Mul(qty))
-		weightTotal := int(variantModel.Weight.Int32) * productRequest.Qty
+		qty := decimal.NewFromInt32(variant.Qty.Int32)
+		total = total.Add(variant.Price.Decimal.Mul(qty))
+		weightTotal := int(variant.Weight.Int32) * int(variant.Qty.Int32)
 
 		calculatedProducts = append(calculatedProducts, model.ProductSummary{
-			ProductVariant: variantModel,
-			Qty:            productRequest.Qty,
+			ProductVariant: variant,
+			Qty:            int(variant.Qty.Int32),
 			Total:          total,
 			Weight:         weightTotal,
 		})

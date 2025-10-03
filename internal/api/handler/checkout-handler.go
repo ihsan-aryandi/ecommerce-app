@@ -23,7 +23,25 @@ func NewCheckoutHandler(
 }
 
 func (h CheckoutHandler) Checkout(ctx *gin.Context) {
+	body := new(request.CreateCheckoutSessionRequest)
 
+	if err := ctx.ShouldBindJSON(body); err != nil {
+		ErrorJSON(ctx, err)
+		return
+	}
+
+	if err := body.Validate(); err != nil {
+		ErrorJSON(ctx, err)
+		return
+	}
+
+	err := h.checkoutService.CreateCheckoutSession(body)
+	if err != nil {
+		ErrorJSON(ctx, err)
+		return
+	}
+
+	SuccessJSON(ctx, "Checkout success", nil, nil)
 }
 
 func (h CheckoutHandler) CalculateSummaries(ctx *gin.Context) {

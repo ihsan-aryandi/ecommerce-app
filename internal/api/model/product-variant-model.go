@@ -13,5 +13,6 @@ type ProductVariant struct {
 	Price       decimal.NullDecimal `db:"price"`
 	Stock       sql.NullInt32       `db:"stock"`
 	Weight      sql.NullInt32       `db:"weight"`
+	Qty         sql.NullInt32
 	Audit
 }

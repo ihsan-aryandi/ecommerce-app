@@ -12,9 +12,6 @@ func SetupRoutes(handlers *HandlersContainer) *gin.Engine {
 	r.POST("/checkout", handlers.CheckoutHandler.Checkout)
 	r.POST("/checkout/summary", handlers.CheckoutHandler.CalculateSummaries)
 
-	// Calculate API
-	r.POST("/calculate-summary", handlers.CalculateHandler.CalculateSummaries)
-
 	// Order API
 	r.POST("/order", handlers.OrderHandler.CreateOrder)
 	return r

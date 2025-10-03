@@ -2,11 +2,6 @@ package request
 
 import "ecommerce-app/internal/api/apierr"
 
-type ProductVariant struct {
-	ProductVariantId int64 `json:"product_variant_id"`
-	Qty              int   `json:"qty"`
-}
-
 type OrderRequest struct {
 	Products              []ProductVariant `json:"products"`
 	ShipperDestinationId  int64            `json:"shipper_destination_id"`

@@ -3,31 +3,16 @@ package request
 import "ecommerce-app/internal/api/apierr"
 
 type CalculateSummaryRequest struct {
-	Products              []ProductVariant `json:"products"`
-	ShipperDestinationId  int64            `json:"shipper_destination_id"`
-	ReceiverDestinationId int64            `json:"receiver_destination_id"`
-	Courier               string           `json:"courier"`
-	CourierType           string           `json:"courier_type"`
-	CourierService        string           `json:"courier_service"`
-	IsInitial             bool             `json:"is_initial"`
+	ShipperDestinationId  int64  `json:"shipper_destination_id"`
+	ReceiverDestinationId int64  `json:"receiver_destination_id"`
+	Courier               string `json:"courier"`
+	CourierType           string `json:"courier_type"`
+	CourierService        string `json:"courier_service"`
+	IsInitial             bool   `json:"is_initial"`
 }
 
 func (r CalculateSummaryRequest) ValidateCalculateSummary() *apierr.Error {
 	validationErrors := apierr.NewValidationError()
-
-	if len(r.Products) == 0 {
-		validationErrors.Add("products", apierr.EmptyFieldMessage())
-	}
-
-	for _, product := range r.Products {
-		if product.ProductVariantId <= 0 {
-			return apierr.EmptyField("product_variant_id")
-		}
-
-		if product.Qty <= 0 {
-			return apierr.EmptyField("qty")
-		}
-	}
 
 	if r.ShipperDestinationId <= 0 {
 		validationErrors.Add("shipper_destination_id", apierr.EmptyFieldMessage())

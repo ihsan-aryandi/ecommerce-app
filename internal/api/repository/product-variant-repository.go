@@ -20,7 +20,17 @@ func NewProductVariantRepository(db *goqu.Database) *ProductVariantRepository {
 
 func (r ProductVariantRepository) FindByIdTx(tx *goqu.TxDatabase, id int64) (*model.ProductVariant, error) {
 	result := new(model.ProductVariant)
+
+	selectCols := []interface{}{
+		"id",
+		"product_id",
+		"price",
+		"stock",
+		"weight",
+	}
+
 	found, err := tx.
+		Select(selectCols...).
 		From(goqu.T(r.tableName)).
 		Where(
 			goqu.C("id").Eq(id),

@@ -32,6 +32,16 @@ func (svc ProductVariantService) GetProductVariantMap(products []request.Product
 		result[variant.ID.Int64] = &variant
 	}
 
+	// Validate product variants & set quantity
+	for _, product := range products {
+		variant, exists := result[product.ProductVariantId]
+		if !exists {
+			return nil, apierr.IdNotFound("Product Variant ID", product.ProductVariantId)
+		}
+
+		variant.Qty.Int32 = int32(product.Qty)
+	}
+
 	return result, nil
 }
 
