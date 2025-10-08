@@ -29,12 +29,27 @@ func (svc CheckoutService) CreateCheckoutSession(body *request.CreateCheckoutSes
 		return apierr.InternalServer(err)
 	}
 
+	loc, _ := time.LoadLocation("Asia/Jakarta")
+	now := time.Now()
+
+	expirationDuration := 15 * time.Minute
+
+	createdAt := now.In(loc)
+	expiresAt := createdAt.Add(expirationDuration)
+
+	createdAtUTC := now.UTC()
+	expiresAtUTC := createdAtUTC.Add(expirationDuration)
+
 	checkoutSession := &model.CheckoutSession{
 		ProductVariants: variantMap,
 		UserId:          1, // temp hardcoded
+		CreatedAt:       now,
+		CreatedAtUTC:    createdAtUTC,
+		ExpiresAt:       expiresAt,
+		ExpiresAtUTC:    expiresAtUTC,
 	}
 
-	_, err = svc.checkoutSessionRepo.Save(checkoutSession, time.Minute*15)
+	_, err = svc.checkoutSessionRepo.Save(checkoutSession, expirationDuration)
 	if err != nil {
 		return apierr.InternalServer(err)
 	}

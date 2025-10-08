@@ -9,6 +9,7 @@ import (
 	"ecommerce-app/internal/constants"
 	"errors"
 	"strings"
+	"time"
 
 	"github.com/shopspring/decimal"
 )
@@ -57,6 +58,15 @@ func (svc CalculateService) CalculateSummaries(body *request.CalculateSummaryReq
 	summaryModel, err := svc.CalculateSummary(calcSummaryModel)
 	if err != nil {
 		return nil, err
+	}
+
+	checkoutSession.SubTotal = summaryModel.SubTotal
+	checkoutSession.ShippingCost = summaryModel.ShippingCost
+	checkoutSession.Total = summaryModel.Total
+
+	_, err = svc.checkoutSessionRepository.Save(checkoutSession, time.Minute*15)
+	if err != nil {
+		return nil, apierr.InternalServer(err)
 	}
 
 	return svc.toCalculateSummaryResponse(summaryModel), nil
