@@ -55,21 +55,34 @@ func (svc CalculateService) CalculateSummaries(body *request.CalculateSummaryReq
 		CourierService:        body.CourierService,
 	}
 
-	summaryModel, err := svc.CalculateSummary(calcSummaryModel)
+	summary, err := svc.CalculateSummary(calcSummaryModel)
 	if err != nil {
 		return nil, err
 	}
 
-	checkoutSession.SubTotal = summaryModel.SubTotal
-	checkoutSession.ShippingCost = summaryModel.ShippingCost
-	checkoutSession.Total = summaryModel.Total
-
-	_, err = svc.checkoutSessionRepository.Save(checkoutSession, time.Minute*15)
-	if err != nil {
-		return nil, apierr.InternalServer(err)
+	if err = svc.updateCheckoutSession(checkoutSession, summary); err != nil {
+		return nil, err
 	}
 
-	return svc.toCalculateSummaryResponse(summaryModel), nil
+	return svc.toCalculateSummaryResponse(summary), nil
+}
+
+func (svc CalculateService) updateCheckoutSession(checkoutSession *model.CheckoutSession, summary *model.SummaryModel) error {
+	checkoutSession.ShipperDestinationId = summary.ShipperDestinationId
+	checkoutSession.ReceiverDestinationId = summary.ReceiverDestinationId
+	checkoutSession.SubTotal = summary.SubTotal
+	checkoutSession.ShippingCost = summary.ShippingCost
+	checkoutSession.Total = summary.Total
+	checkoutSession.Courier = summary.Courier
+	checkoutSession.CourierType = summary.CourierType
+	checkoutSession.CourierService = summary.CourierService
+
+	_, err := svc.checkoutSessionRepository.Save(checkoutSession, time.Minute*15)
+	if err != nil {
+		return apierr.InternalServer(err)
+	}
+
+	return nil
 }
 
 func (svc CalculateService) CalculateSummary(calcModel *model.CalculateSummary) (*model.SummaryModel, error) {
@@ -93,15 +106,17 @@ func (svc CalculateService) CalculateSummary(calcModel *model.CalculateSummary) 
 	}
 
 	result := &model.SummaryModel{
-		AvailableShipments: shipping.Data,
-		Products:           calculatedProducts,
-		Weight:             weight,
-		Courier:            shipment.ShippingName,
-		CourierType:        shipmentType,
-		CourierService:     shipment.ServiceName,
-		SubTotal:           subTotal,
-		ShippingCost:       shipment.ShippingCost,
-		Total:              subTotal.Add(shipment.ShippingCost),
+		AvailableShipments:    shipping.Data,
+		ShipperDestinationId:  calcModel.ShipperDestinationId,
+		ReceiverDestinationId: calcModel.ReceiverDestinationId,
+		Products:              calculatedProducts,
+		Weight:                weight,
+		Courier:               shipment.ShippingName,
+		CourierType:           shipmentType,
+		CourierService:        shipment.ServiceName,
+		SubTotal:              subTotal,
+		ShippingCost:          shipment.ShippingCost,
+		Total:                 subTotal.Add(shipment.ShippingCost),
 	}
 
 	return result, nil

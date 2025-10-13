@@ -1,10 +1,13 @@
 package apierr
 
 import (
+	"ecommerce-app/internal/utils"
 	"errors"
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/shopspring/decimal"
 )
 
 type Params map[string]string
@@ -79,6 +82,74 @@ func InvalidRequest(causedBy error) *Error {
 		Code:       InvalidRequestErrorCode,
 		Message:    InvalidRequestErrorMessage,
 		CausedBy:   causedBy,
+	}
+}
+
+func ProductPriceChanged(productName string, oldPrice decimal.Decimal, newPrice decimal.Decimal) *Error {
+	oldPriceFloat, _ := oldPrice.Float64()
+	newPriceFloat, _ := newPrice.Float64()
+
+	message := replacePlaceholders(ProductPriceChangedMessage, Params{
+		"productName": productName,
+		"oldPrice":    utils.FormatRupiah(oldPriceFloat),
+		"newPrice":    utils.FormatRupiah(newPriceFloat),
+	})
+
+	return &Error{
+		StatusCode: 409,
+		Code:       ProductPriceChangedErrorCode,
+		Message:    message,
+		CausedBy:   errors.New(message),
+		Details: map[string]interface{}{
+			"product_name": productName,
+			"old_price":    oldPrice,
+			"new_price":    newPrice,
+		},
+	}
+}
+
+func ProductWeightChanged(productName string, oldWeight, newWeight int) *Error {
+	message := replacePlaceholders(ProductWeightChangedMessage, Params{
+		"productName": productName,
+		"oldWeight":   strconv.Itoa(oldWeight),
+		"newWeight":   strconv.Itoa(newWeight),
+	})
+
+	return &Error{
+		StatusCode: 409,
+		Code:       ProductWeightChangedErrorCode,
+		Message:    message,
+		CausedBy:   errors.New(message),
+		Details: map[string]interface{}{
+			"product_name": productName,
+			"old_weight":   oldWeight,
+			"new_weight":   newWeight,
+		},
+	}
+}
+
+func ShippingCostChanged(courier, courierService string, oldCost decimal.Decimal, newCost decimal.Decimal) *Error {
+	oldCostFloat, _ := oldCost.Float64()
+	newCostFloat, _ := newCost.Float64()
+
+	message := replacePlaceholders(ShippingCostChangedMessage, Params{
+		"courier":        courier,
+		"courierService": courierService,
+		"oldCost":        utils.FormatRupiah(oldCostFloat),
+		"newCost":        utils.FormatRupiah(newCostFloat),
+	})
+
+	return &Error{
+		StatusCode: 409,
+		Code:       ShippingCostChangedErrorCode,
+		Message:    message,
+		CausedBy:   errors.New(message),
+		Details: map[string]interface{}{
+			"courier":         courier,
+			"courier_service": courierService,
+			"old_cost":        oldCost,
+			"new_cost":        newCost,
+		},
 	}
 }
 

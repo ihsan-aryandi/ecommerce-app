@@ -29,3 +29,18 @@ const InvalidRequestErrorMessage = "Request body format is invalid. Please check
 
 const ValidationErrorCode = "VALIDATION_ERROR"
 const ValidationErrorMessage = "Validation error"
+
+// ===== PRODUCT PRICE CHANGED ERROR =====
+
+const ProductPriceChangedErrorCode = "PRODUCT_PRICE_CHANGED_ERROR"
+const ProductPriceChangedMessage = "Product price update: '{productName}' price changed from {oldPrice} to {newPrice}. Please check again."
+
+// ===== PRODUCT WEIGHT CHANGED ERROR =====
+
+const ProductWeightChangedErrorCode = "PRODUCT_WEIGHT_CHANGED_ERROR"
+const ProductWeightChangedMessage = "Product weight update: '{productName}' weight changed from {oldWeight} to {newWeight}. Please check again."
+
+// ===== SHIPPING COST CHANGED ERROR =====
+
+const ShippingCostChangedErrorCode = "SHIPPING_COST_CHANGED_ERROR"
+const ShippingCostChangedMessage = "Shipping cost update: {courier} {courierService} price changed from {oldCost} to {newCost}. Please check again."
